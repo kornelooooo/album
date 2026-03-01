@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<title>Virtual Album – przesunięty w prawo</title>
+<style>
+body {
+    margin: 0;
+    background: white;
+    height: 100vh;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    font-family: Arial, sans-serif;
+    overflow: hidden; /* brak scrolla */
+}
+
+.scene {
+    perspective: 2500px;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    transform: translateX(1250px); /* przesunięcie albumu w prawo */
+}
+
+.book-container {
+    position: relative;
+    width: 1600px;  /* szerokość dla dużych zdjęć */
+    height: 1067px;  /* proporcja 3:2 na stronę, dwie strony = 1600x1067 */
+}
+
+.shadow {
+    position: absolute;
+    bottom: -100px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 1500px;
+    height: 100px;
+    background: radial-gradient(ellipse at center, rgba(0,0,0,0.18), transparent 70%);
+    filter: blur(30px);
+}
+
+.book {
+    width: 100%;
+    height: 100%;
+    position: relative;
+    transform-style: preserve-3d;
+    cursor: pointer;
+}
+
+.paper {
+    position: absolute;
+    width: 50%;
+    height: 100%;
+    transform-origin: left;
+    transform-style: preserve-3d;
+    transition: transform 1s ease;
+    top: 0;
+    left: 0;
+}
+
+.paper.flipped {
+    transform: rotateY(-180deg);
+}
+
+.front, .back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    backface-visibility: hidden;
+    box-shadow: inset 0 0 20px rgba(0,0,0,0.08);
+}
+
+.back {
+    transform: rotateY(180deg);
+}
+</style>
+</head>
+<body>
+<div class="scene">
+    <div class="book-container">
+        <div class="book" id="book"></div>
+        <div class="shadow"></div>
+    </div>
+</div>
+<script>
+const pages = [
+    { front: "#2f6bff", back: "#ffeb3b" },  // okładka przednia → żółta
+    { front: "#ffeb3b", back: "#4caf50" },  // żółta → zielona
+    { front: "#4caf50", back: "#ff9800" }   // zielona → okładka tylna
+];
+
+let currentPage = 0;
+const book = document.getElementById("book");
+
+function loadAlbum() {
+    book.innerHTML = "";
+    for (let i = 0; i < pages.length; i++) {
+        const paper = document.createElement("div");
+        paper.classList.add("paper");
+        paper.style.zIndex = pages.length - i;
+
+        const front = document.createElement("div");
+        front.classList.add("front");
+        front.style.background = pages[i].front;
+
+        const back = document.createElement("div");
+        back.classList.add("back");
+        back.style.background = pages[i].back;
+
+        paper.appendChild(front);
+        paper.appendChild(back);
+        book.appendChild(paper);
+    }
+    currentPage = 0;
+}
+
+book.addEventListener("click", () => {
+    const papers = document.querySelectorAll(".paper");
+    if (currentPage < papers.length) {
+        papers[currentPage].classList.add("flipped");
+        papers[currentPage].style.zIndex = currentPage + 1;
+        currentPage++;
+    } else {
+        loadAlbum(); // restart po ostatniej stronie
+    }
+});
+
+loadAlbum();
+</script>
+</body>
+</html>
